@@ -1,72 +1,114 @@
-""<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Atendimento - Agente IA</title>
+  <title>Nobe IA - Atendimento Seguro</title>
   <style>
+    * {
+      box-sizing: border-box;
+    }
     body {
-      font-family: sans-serif;
-      background-color: #f0f0f0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(145deg, #e2e8f0, #f8fafc);
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
       margin: 0;
     }
-    .chat-container {
+    .login-container, .chat-container {
       background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      width: 400px;
-      max-width: 90%;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 400px;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #0f172a;
+    }
+    .input-group {
+      margin-bottom: 15px;
+    }
+    .input-group input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+    }
+    .input-group input:focus {
+      outline: none;
+      border-color: #3b82f6;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      background: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover {
+      background: #2563eb;
     }
     .chat {
       height: 300px;
       overflow-y: auto;
-      border: 1px solid #ccc;
+      border: 1px solid #cbd5e1;
       padding: 10px;
-      margin-bottom: 10px;
-      border-radius: 5px;
-    }
-    .input {
-      display: flex;
-      gap: 10px;
-    }
-    input[type="text"] {
-      flex: 1;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
-    button {
-      padding: 10px 20px;
-      background: #007bff;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #0056b3;
+      margin-bottom: 15px;
+      border-radius: 6px;
+      background: #f8fafc;
     }
     .usuario {
       font-weight: bold;
-      color: #007bff;
+      color: #1d4ed8;
     }
   </style>
 </head>
 <body>
-  <div class="chat-container">
-    <div class="chat" id="chat"></div>
-    <div class="input">
-      <input type="text" id="mensagem" placeholder="Digite sua mensagem..." />
-      <button onclick="enviarMensagem()">Enviar</button>
+  <div class="login-container" id="loginBox">
+    <h2>Acesso Restrito - Nobe IA</h2>
+    <div class="input-group">
+      <input type="text" id="usuario" placeholder="Usuário">
     </div>
+    <div class="input-group">
+      <input type="password" id="senha" placeholder="Senha">
+    </div>
+    <button onclick="login()">Entrar</button>
+  </div>
+
+  <div class="chat-container" id="chatBox" style="display:none">
+    <h2>Nobe IA</h2>
+    <div class="chat" id="chat"></div>
+    <div class="input-group">
+      <input type="text" id="mensagem" placeholder="Digite sua mensagem...">
+    </div>
+    <button onclick="enviarMensagem()">Enviar</button>
   </div>
 
   <script>
+    const usuariosAutorizados = {
+      "admin": "1234",
+      "joao": "senha123"
+    };
+
+    function login() {
+      const user = document.getElementById("usuario").value;
+      const pass = document.getElementById("senha").value;
+      if (usuariosAutorizados[user] === pass) {
+        document.getElementById("loginBox").style.display = "none";
+        document.getElementById("chatBox").style.display = "block";
+      } else {
+        alert("Acesso negado. Verifique suas credenciais.");
+      }
+    }
+
     const chat = document.getElementById("chat");
     const mensagemInput = document.getElementById("mensagem");
 
@@ -84,7 +126,6 @@
       appendMsg(mensagem, true);
       mensagemInput.value = "";
 
-      // Substitua pela sua URL de produção do n8n
       const resposta = await fetch("https://producao-primaria-6cfc.up.railway.app/webhook/chat-web", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -95,8 +136,8 @@
       appendMsg(dados.resposta || "Erro ao obter resposta do agente IA.");
     }
 
-    mensagemInput.addEventListener("keypress", function(e) {
-      if (e.key === "Enter") {
+    document.addEventListener("keydown", function(e) {
+      if (e.key === "Enter" && document.getElementById("chatBox").style.display !== "none") {
         e.preventDefault();
         enviarMensagem();
       }
