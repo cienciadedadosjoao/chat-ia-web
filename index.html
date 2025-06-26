@@ -1,117 +1,106 @@
-<!DOCTYPE html>
+""<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Chat IA Seguro</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Atendimento - Agente IA</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #f4f4f4;
+      font-family: sans-serif;
+      background-color: #f0f0f0;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
       margin: 0;
     }
-    #login-container, #chat-container {
-      background: #fff;
+    .chat-container {
+      background: white;
       padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      width: 100%;
-      max-width: 400px;
-      display: none;
-      flex-direction: column;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      width: 400px;
+      max-width: 90%;
+    }
+    .chat {
+      height: 300px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+    }
+    .input {
+      display: flex;
       gap: 10px;
     }
-    input, button {
+    input[type="text"] {
+      flex: 1;
       padding: 10px;
       border: 1px solid #ccc;
       border-radius: 5px;
-      width: 100%;
     }
     button {
+      padding: 10px 20px;
       background: #007bff;
-      color: #fff;
+      color: white;
+      border: none;
+      border-radius: 5px;
       cursor: pointer;
     }
     button:hover {
       background: #0056b3;
     }
-    #chat-box {
-      height: 300px;
-      overflow-y: auto;
-      border: 1px solid #ccc;
-      padding: 10px;
-      border-radius: 5px;
-      background: #f9f9f9;
+    .usuario {
+      font-weight: bold;
+      color: #007bff;
     }
-    .msg { margin-bottom: 10px; }
-    .user { font-weight: bold; color: #007bff; }
-    .bot { font-weight: bold; color: #28a745; }
   </style>
 </head>
 <body>
-  <div id="login-container">
-    <h2>Acesso Restrito</h2>
-    <input type="text" id="username" placeholder="Usuário" />
-    <input type="password" id="password" placeholder="Senha" />
-    <button onclick="login()">Entrar</button>
-    <p id="login-error" style="color:red; display:none;">Credenciais inválidas</p>
-  </div>
-
-  <div id="chat-container">
-    <div id="chat-box"></div>
-    <input type="text" id="message" placeholder="Digite sua mensagem..." onkeydown="if(event.key==='Enter')sendMessage()" />
-    <button onclick="sendMessage()">Enviar</button>
+  <div class="chat-container">
+    <div class="chat" id="chat"></div>
+    <div class="input">
+      <input type="text" id="mensagem" placeholder="Digite sua mensagem..." />
+      <button onclick="enviarMensagem()">Enviar</button>
+    </div>
   </div>
 
   <script>
-    const users = {
-      joaomarcos: '1234',
-      admin: 'senha123'
-    };
+    const chat = document.getElementById("chat");
+    const mensagemInput = document.getElementById("mensagem");
 
-    window.onload = () => {
-      document.getElementById('login-container').style.display = 'flex';
-    };
-
-    function login() {
-      const user = document.getElementById('username').value;
-      const pass = document.getElementById('password').value;
-      if (users[user] === pass) {
-        document.getElementById('login-container').style.display = 'none';
-        document.getElementById('chat-container').style.display = 'flex';
-      } else {
-        document.getElementById('login-error').style.display = 'block';
-      }
+    function appendMsg(texto, usuario = false) {
+      const div = document.createElement("div");
+      div.className = usuario ? "usuario" : "bot";
+      div.innerHTML = usuario ? `<span class='usuario'>Você:</span> ${texto}` : texto;
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
     }
 
-    async function sendMessage() {
-      const msg = document.getElementById('message').value;
-      if (!msg) return;
+    async function enviarMensagem() {
+      const mensagem = mensagemInput.value.trim();
+      if (!mensagem) return;
+      appendMsg(mensagem, true);
+      mensagemInput.value = "";
 
-      appendMsg('Você', msg, 'user');
-      document.getElementById('message').value = '';
-
-      const res = await fetch('https://primary-production-6cfc.up.railway.app/webhook', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: msg })
+      // Substitua pela sua URL de produção do n8n
+      const resposta = await fetch("https://producao-primaria-6cfc.up.railway.app/webhook/chat-web", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: mensagem })
       });
-      const data = await res.json();
 
-      appendMsg('IA', data.reply || 'Sem resposta', 'bot');
+      const dados = await resposta.json();
+      appendMsg(dados.resposta || "Erro ao obter resposta do agente IA.");
     }
 
-    function appendMsg(sender, msg, cls) {
-      const div = document.createElement('div');
-      div.className = 'msg';
-      div.innerHTML = `<span class="${cls}">${sender}:</span> ${msg}`;
-      document.getElementById('chat-box').appendChild(div);
-      document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight;
-    }
+    mensagemInput.addEventListener("keypress", function(e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        enviarMensagem();
+      }
+    });
   </script>
 </body>
 </html>
