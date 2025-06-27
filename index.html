@@ -126,7 +126,7 @@
       appendMsg(mensagem, true);
       mensagemInput.value = "";
 
-      const resposta = await fetch("https://producao-primaria-6cfc.up.railway.app/webhook/chat-web", {
+      const resposta = await fetch("https://primary-production-6cfc.up.railway.app/webhook-test/chat-web", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: mensagem })
